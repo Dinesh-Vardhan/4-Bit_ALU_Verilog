@@ -71,7 +71,6 @@ All implemented test cases passed in simulation.
 
 - `alu_4bit.v` — ALU RTL implementation
 - `tb_alu_4bit.v` — Functional verification testbench
-- `alu_4bit_timing.xdc` — Illustrative timing constraints used during timing analysis
 
 ## Learning Outcomes
 
