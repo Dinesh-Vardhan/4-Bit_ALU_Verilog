@@ -1,96 +1,104 @@
-# 4-Bit ALU Design and Functional Verification Using Verilog
+
+# 4-Bit ALU Design Using Verilog HDL
 
 ## Overview
 
-This project implements a 4-bit Arithmetic Logic Unit (ALU) using Verilog HDL. The design supports 11 arithmetic, logical, comparison, shift, and data-transfer operations, along with four status flags.
+This project implements a 4-bit Arithmetic Logic Unit (ALU) using Verilog HDL. The ALU performs arithmetic, logical, comparison, and shift operations on two 4-bit inputs.
 
-The ALU was functionally verified using a dedicated Verilog testbench in Xilinx Vivado. Exhaustive simulation covered all combinations of 4-bit input operands for every supported operation.
+The design is combinational and includes status flags to indicate carry, zero, negative results, and signed arithmetic overflow. A Verilog testbench verifies all 11 supported operations and checks the status flags across all possible 4-bit input combinations.
 
 ## Features
 
-- 4-bit input operands (`A` and `B`)
-- 4-bit operation selector (`sel`)
-- 11 supported ALU operations
-- Four status flags: carry, zero, negative, and overflow
+- 4-bit input operands and 4-bit result
+- 11 arithmetic and logical operations
 - Combinational RTL design
-- Exhaustive functional verification across operand combinations
-- Verification of arithmetic and non-arithmetic status flags
-- Testing of an unsupported operation selector
+- Carry, zero, negative, and overflow flags
+- Signed and unsigned comparison operations
+- Exhaustive functional verification for all 4-bit operand combinations
+- Separate verification of arithmetic and non-arithmetic status flags
+- Simulation waveforms for ALU operations and arithmetic flags
 
 ## Supported Operations
 
-| Operation | Selector | Description |
+The operation is selected using the 4-bit `sel` input.
+
+| Operation | `sel` | Description |
 |---|---|---|
-| ADD | `0000` | Addition: `A + B` |
-| SUB | `0001` | Subtraction: `A - B` |
+| ADD | `0000` | Adds A and B |
+| SUB | `0001` | Subtracts B from A |
 | AND | `0010` | Bitwise AND |
 | OR | `0011` | Bitwise OR |
 | XOR | `0100` | Bitwise XOR |
 | SLT | `0101` | Signed less-than comparison |
 | SLTU | `0110` | Unsigned less-than comparison |
-| NOT_A | `0111` | Bitwise complement of `A` |
-| SLL | `1000` | Logical left shift of `A` by one bit |
-| SRL | `1001` | Logical right shift of `A` by one bit |
-| PASS_A | `1010` | Pass `A` to the output |
+| NOT_A | `0111` | Bitwise complement of A |
+| SLL | `1000` | Logical left shift of A by 1 bit |
+| SRL | `1001` | Logical right shift of A by 1 bit |
+| PASS_A | `1010` | Passes A to the output |
 
-Unsupported selector values produce a zero result with the default status flags defined in the RTL.
+For `SLT` and `SLTU`, the result is `0001` when the comparison is true and `0000` otherwise.
+
+Unsupported selector values produce a zero result with the default status flags.
 
 ## Status Flags
 
-The ALU generates four status flags:
+The ALU provides four status flags.
 
-- **Carry (`carry`):** For addition, indicates the unsigned carry-out. For subtraction, `1` indicates that no unsigned borrow occurred.
-- **Zero (`zero`):** Set to `1` when the 4-bit result is `0000`.
-- **Negative (`negative`):** Reflects the most significant bit of the result (`Result[3]`).
-- **Overflow (`overflow`):** Indicates signed arithmetic overflow for addition and subtraction. It is set to `0` for non-arithmetic operations.
+| Flag | Description |
+|---|---|
+| Carry (`carry`) | For ADD, indicates carry-out. For SUB, indicates no unsigned borrow. |
+| Zero (`zero`) | Set to 1 when the result is `0000`. |
+| Negative (`negative`) | Equals the most significant bit of the result, `Result[3]`. |
+| Overflow (`overflow`) | Indicates signed overflow during ADD or SUB. Set to 0 for other operations. |
 
-The signed interpretation of a 4-bit value uses two's-complement representation, with a range from -8 to +7.
+### Carry convention for subtraction
 
-## Functional Verification
+For SUB, `carry = 1` when `A >= B`, indicating that no unsigned borrow occurred. Otherwise, `carry = 0`.
 
-A dedicated testbench (`tb_alu_4bit.v`) verifies the ALU's outputs and status flags.
+### Signed overflow
 
-### Result Verification
+For addition, overflow occurs when the operands have the same sign but the result has a different sign.
 
-- Tests all 16 × 16 operand combinations for each of the 11 supported operations.
-- Checks the result for an unsupported selector.
-- Uses case inequality (`!==`) to detect mismatches, including unknown values.
+For subtraction, overflow occurs when the operands have different signs and the result sign differs from the sign of A.
 
-### Status Flag Verification
+## Verification
 
-- Checks all four status flags for every combination of operands during addition and subtraction.
-- Verifies flag behavior for all nine non-arithmetic operations.
-- Checks the expected status flags for an unsupported selector.
+The design was verified using a Verilog testbench in Xilinx Vivado.
 
-### Simulation Results
+The testbench checks all 16 × 16 operand combinations for each of the 11 supported operations.
 
-| Verification category | Passed | Failed |
+### Functional verification results
+
+| Verification | Passed | Failed |
 |---|---:|---:|
-| Result checks | 2,817 | 0 |
+| ALU result checks | 2,817 | 0 |
 | Status flag checks | 2,817 | 0 |
 
-**Simulation outcome:** All recorded result and status flag checks passed with zero failures.
+The result checks include 2,816 operation checks and one invalid-selector result check.
+
+The flag checks include:
+- 256 ADD flag cases
+- 256 SUB flag cases
+- 2,304 non-arithmetic operation flag cases
+- One invalid-selector flag case
+
+**Final simulation status: ALL TESTS PASSED**
+
+These results are from the behavioral simulation output.
 
 ## Simulation Waveforms
 
-The following waveforms illustrate representative ALU behavior during simulation.
+### 1. ALU Operations
 
-### ALU Operations
+The waveform below shows the ALU inputs, operation selector, result, and status flags during functional simulation.
 
 ![ALU operations waveform](waveforms/alu_operations.png)
 
-### Arithmetic Operations and Status Flags
+### 2. Arithmetic Flags
+
+The waveform below illustrates arithmetic operations and their associated status flags, including carry, zero, negative, and overflow.
 
 ![Arithmetic flags waveform](waveforms/arithmetic_flags.png)
-
-The first waveform shows general ALU activity across multiple operations. The second highlights arithmetic operations and status flag behavior, including signed overflow.
-
-## Tools Used
-
-- Verilog HDL
-- Xilinx Vivado
-- Vivado behavioral simulation
-- Vivado synthesis and implementation
 
 ## Repository Structure
 
@@ -106,22 +114,36 @@ The first waveform shows general ALU activity across multiple operations. The se
 └── README.md
 ```
 
+## Tools Used
+
+- Verilog HDL
+- Xilinx Vivado
+- Behavioral simulation
+- Git and GitHub
+
 ## Learning Outcomes
 
-- Combinational RTL design using Verilog HDL
-- Implementation of arithmetic and logical operations
+Through this project, I gained practical experience in:
+
+- Designing combinational digital circuits using Verilog HDL
+- Implementing arithmetic and logical operations
 - Understanding signed and unsigned comparisons
-- Status flag generation and verification
-- Exhaustive functional testing using a Verilog testbench
-- Simulation, synthesis, and implementation workflows in Vivado
+- Generating and verifying arithmetic status flags
+- Writing testbenches for exhaustive functional verification
+- Analyzing simulation waveforms
+- Documenting and maintaining an RTL design project using GitHub
 
 ## Future Improvements
 
-- Integrate the ALU into a wider processor datapath.
-- Extend the design to support wider operands and additional operations.
-- Explore timing optimization under clearly defined system constraints.
-- Develop a more advanced verification environment using SystemVerilog.
+Possible extensions include:
+
+- Parameterizing the ALU for wider data widths
+- Adding additional arithmetic and bit-manipulation operations
+- Integrating the ALU into a processor datapath
+- Exploring synthesis results and FPGA resource utilization
 
 ## Conclusion
 
-This project demonstrates the design and functional verification of a multi-operation 4-bit ALU using Verilog HDL. It establishes a foundation for further work in RTL design, digital logic, and processor datapath development.
+This project demonstrates the design and functional verification of a 4-bit combinational ALU using Verilog HDL. The design supports 11 operations and four status flags, with the testbench reporting zero failures across 2,817 result checks and 2,817 flag checks.
+
+The project provides a foundation for further exploration of RTL design, digital systems, and processor datapath implementation.
