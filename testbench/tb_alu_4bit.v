@@ -126,7 +126,7 @@ module tb_alu_4bit;
                 expected = (A>>1);
                 #1;
                 if(Result !== expected)begin
-                    $display("FAIL SLR A=%b Result=%b Expected=%b", A,Result,expected);
+                    $display("FAIL SRL A=%b Result=%b Expected=%b", A,Result,expected);
                     failed=failed+1;
                 end else passed=passed+1;
                 
